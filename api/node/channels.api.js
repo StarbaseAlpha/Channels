@@ -57,9 +57,9 @@ function ChannelsAPI(serverPath) {
         })
       },(err,response,body)=>{
         if (response.statusCode > 399) {
-          reject(body);
+          reject(JSON.parse(body));
         } else {
-          resolve(body);
+          resolve(JSON.parse(body));
         }
       });
     });
