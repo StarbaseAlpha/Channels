@@ -11,6 +11,19 @@ function Channels(db) {
     }
   };
 
+  const Projection = (doc, projection) => {
+    let result = {};
+    for(let k in doc) {
+      if (projection[k]) {
+        if (typeof doc[k] === 'object') {
+          result[k] = Projection(doc[k],projection[k]);
+        } else {
+          result[k] = doc[k];
+        }
+      }
+    }
+    return result;
+  };
 
   // ParsePath - Parses the requested Path into the useful parts
   const ParsePath = (requestPath) => {
@@ -64,8 +77,8 @@ function Channels(db) {
         return Put(db, parsedPath, data);
       },
 
-      "get": () => {
-        return Get(db, parsedPath);
+      "get": (query) => {
+        return Get(db, parsedPath, query);
       },
 
       "del": () => {
@@ -149,7 +162,7 @@ function Channels(db) {
     });
   };
 
-  const Get = (db, requestPath) => {
+  const Get = (db, requestPath, query) => {
     return new Promise((resolve, reject) => {
 
       let {
@@ -159,21 +172,33 @@ function Channels(db) {
         slash
       } = ParsePath(requestPath);
 
-      db.get('!' + channel + '!' + key).then(result => {
+      db.get('!' + channel + '!' + key).then(response => {
 
-        if (!result.value) {
+        if (!response.value) {
           return reject({
             "code": 404,
             "message": "Not Found"
           });
         }
 
-        resolve({
+        let result = {
           "path": channel + slash + key,
           "channel": channel,
           "key": key,
-          "data": result.value
-        });
+          "data": response.value
+        };
+        if (query && query.projection && typeof query.projection === 'object') {
+          result = Projection(result, query.projection);
+        }
+
+        if (query && query.children) {
+          List(db, result.path, query.children).then(children => {
+            result.children = children;
+            resolve(result);
+          });
+        } else {
+          resolve(result);
+        }
 
       }).catch(reject);
 
@@ -261,6 +286,9 @@ function Channels(db) {
           };
           if (val.value) {
             result.data = val.value;
+          }
+          if (query.projection && typeof query.projection === 'object') {
+            result = Projection(result, query.projection);
           }
           return result;
         });

@@ -41,19 +41,26 @@ function ChannelsAPI(serverPath) {
   let channels = {};
 
   const request = (req) => {
-    return fetch(serverPath,{
-      "method":"POST",
-      "headers":{
-        "content-type":"application/json"
-      },
-      "body":JSON.stringify({
-        "token": token || req.token || "",
-        "method":req.method || "",
-        "path":req.path || "",
-        "data":req.data || {}
-      })
-    }).then(response=>{
-      return response.json();
+    return new Promise((resolve,reject) => {
+      fetch(serverPath,{
+        "method":"POST",
+        "headers":{
+          "content-type":"application/json"
+        },
+        "body":JSON.stringify({
+          "token": token || req.token || "",
+          "method":req.method || "",
+          "path":req.path || "",
+          "data":req.data || {}
+        })
+      }).then(async (response)=>{
+        let result = await response.json();
+        if (response.status > 399) {
+          return reject(result);
+        } else {
+          return resolve(result);
+        }
+      });
     });
   };
 
@@ -66,8 +73,8 @@ function ChannelsAPI(serverPath) {
     return request({"method":"put","path":path,"data":data});
   };
 
-  const Get = (path) => {
-    return request({"method":"get","path":path});
+  const Get = (path,query) => {
+    return request({"method":"get","path":path, "data":query});
   };
 
   const Del = (path) => {
@@ -93,12 +100,16 @@ function ChannelsAPI(serverPath) {
         setToken(token);
       },
 
+      "request": (req) => {
+        return request({"method":req.method,"path":req.path||parsedPath,"data":req.data||null});
+      },
+
       "put": (data) => {
         return Put(parsedPath, data);
       },
 
-      "get": () => {
-        return Get(parsedPath);
+      "get": (query) => {
+        return Get(parsedPath,query);
       },
 
       "del": () => {
