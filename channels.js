@@ -244,7 +244,7 @@ function Channels(db) {
 
   const List = (db, requestPath = "/", query = {}) => {
     return new Promise((resolve, reject) => {
-      if (typeof query !== 'object') {
+      if (!query || typeof query !== 'object') {
         query = {};
       }
       let channel = requestPath.toString();

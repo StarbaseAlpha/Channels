@@ -39,22 +39,29 @@ function ChannelsAPI(serverPath) {
 
 
   let token = null;
+  let tokenHandler = null;
 
   let channels = {};
 
-  const request = (req) => {
-    return new Promise((resolve,reject) => {
+  const request = async (req) => {
+    return new Promise(async (resolve,reject) => {
+
+      if (tokenHandler && typeof tokenHandler === 'function') {
+        token = await tokenHandler();
+      } 
+
+      let body = {};
+      body.path = req.path || null;
+      body.method = req.method || null;
+      body.data = req.data || null;
+      body.token = req.token || token || null;
+
       return Request(serverPath,{
         "method":"POST",
         "headers":{
           "content-type":"application/json"
         },
-        "body":JSON.stringify({
-          "token": token || req.token || "",
-          "method":req.method || "",
-          "path":req.path || "",
-          "data":req.data || {}
-        })
+        "body":JSON.stringify(body)
       },(err,response,body)=>{
         if (response.statusCode > 399) {
           reject(JSON.parse(body));
@@ -67,6 +74,11 @@ function ChannelsAPI(serverPath) {
 
   const setToken = (newToken) => {
     token = newToken;
+    return true;
+  };
+
+  const setTokenHandler = (cb) => {
+    tokenHandler = cb;
     return true;
   };
 
@@ -99,6 +111,14 @@ function ChannelsAPI(serverPath) {
 
       "setToken": (token) => {
         setToken(token);
+      },
+
+      "setTokenHandler": (cb) => {
+        setTokenHandler(cb);
+      },
+
+      "request": (req) => {
+        return request({"method":req.method||null,"path":req.path||parsedPath,"data":req.data||null,"token":req.token||null});
       },
 
       "put": (data) => {
