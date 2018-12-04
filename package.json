@@ -1,6 +1,6 @@
 {
   "name": "@starbase/channels",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Starbase Channels",
   "main": "index.js",
   "scripts": {

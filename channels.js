@@ -25,6 +25,45 @@ function Channels(db) {
     return result;
   };
 
+  const Filter = (doc,filter) => {
+
+  let filtered = false;
+
+  if (typeof filter === 'string' && typeof doc === 'string') {
+    let regex = new RegExp(filter,'ig');
+    if (doc && doc.match(regex)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  for(let k in filter) {
+
+    if (!doc[k]) {
+      filtered = true;
+      break;
+    }
+
+    if (typeof filter[k] !== typeof doc[k]) {
+      filtered = true;
+      break;
+    }
+
+    if (typeof filter[k] === typeof doc[k]) {
+      filtered = Filter(doc[k],filter[k]);
+      if (filtered) {
+        break;
+      }
+    }
+
+  }
+
+  return filtered;
+
+};
+
+
   // ParsePath - Parses the requested Path into the useful parts
   const ParsePath = (requestPath) => {
 
@@ -290,7 +329,14 @@ function Channels(db) {
           if (query.projection && typeof query.projection === 'object') {
             result = Projection(result, query.projection);
           }
+
           return result;
+        }).filter(val=>{
+          if (query.filter && typeof query.filter === 'object') {
+            return !Filter(val.data, query.filter);
+          } else {
+            return true;
+          }
         });
         resolve({
           "data": data
