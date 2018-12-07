@@ -86,8 +86,8 @@ function ChannelsAPI(serverPath) {
     return request({"method":"put","path":path,"data":data});
   };
 
-  const Get = (path) => {
-    return request({"method":"get","path":path});
+  const Get = (path,query) => {
+    return request({"method":"get","path":path, "data":query});
   };
 
   const Del = (path) => {
@@ -125,8 +125,8 @@ function ChannelsAPI(serverPath) {
         return Put(parsedPath, data);
       },
 
-      "get": () => {
-        return Get(parsedPath);
+      "get": (query) => {
+        return Get(parsedPath,query);
       },
 
       "del": () => {
