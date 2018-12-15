@@ -1,6 +1,6 @@
 {
   "name": "@starbase/channels",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Starbase Channels",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,6 @@
   "author": "Mike Fuller",
   "license": "MIT",
   "dependencies": {
-    "request": "^2.88.0"
   },
   "repository": {
     "type": "git",
