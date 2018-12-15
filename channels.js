@@ -232,7 +232,11 @@ function Channels(db) {
 
         if (query && query.children) {
           List(db, result.path, query.children).then(children => {
-            result.children = children;
+            if (children && children.data) {
+              result.children = children.data;
+            } else {
+              result.children = [];
+            }
             resolve(result);
           });
         } else {
