@@ -336,7 +336,7 @@ function Channels(db) {
 
           return result;
         }).filter(val=>{
-          if (query.filter && typeof query.filter === 'object') {
+          if (query.values && query.filter && typeof query.filter === 'object') {
             return !Filter(val.data, query.filter);
           } else {
             return true;
