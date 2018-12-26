@@ -128,6 +128,10 @@ function Channels(db) {
         return List(db, parsedPath, query);
       },
 
+      "parse": (path=null) => {
+        return ParsePath((path||parsedPath).toString());
+      },
+
       // the path method provides an instance of Channel pointing to a child path of its parent
       "path": (path) => {
         if (!path) {
