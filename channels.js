@@ -1,6 +1,5 @@
 'use strict';
 
-// Channels - The db parameter should be a database or memstore object
 function Channels(db) {
 
   let onEvent;
@@ -64,7 +63,6 @@ function Channels(db) {
 };
 
 
-  // ParsePath - Parses the requested Path into the useful parts
   const ParsePath = (requestPath) => {
 
     let reqPath;
@@ -75,7 +73,6 @@ function Channels(db) {
       reqPath = '/';
     }
 
-    // Removing trailing, leading, and double slashes and split on slash
     let parts = reqPath.toString()
       .replace(/\/\//g, '/')
       .replace(/^\//, '')
@@ -83,7 +80,6 @@ function Channels(db) {
       .replace(/\/\//g, '/')
       .split('/');
 
-    // Useful parts
     let channel = '/' + parts.slice(0, -1).join('/');
     let key = parts.slice(-1)[0];
     let slash = "";
@@ -100,7 +96,6 @@ function Channels(db) {
     };
   };
 
-  // Channel - return an object with CRUD operations directed to the request path
   const Channel = (db, requestPath) => {
 
     let parsed = ParsePath(requestPath);
@@ -132,7 +127,6 @@ function Channels(db) {
         return ParsePath((path||parsedPath).toString());
       },
 
-      // the path method provides an instance of Channel pointing to a child path of its parent
       "path": (path) => {
         if (!path) {
           path = "/";
@@ -313,6 +307,7 @@ function Channels(db) {
         "values": query.values || false,
         "limit": query.limit || null
       }).then(results => {
+        let last = null;
         let data = results.map(val => {
           if (typeof val !== 'object') {
             val = {
@@ -331,13 +326,13 @@ function Channels(db) {
             "channel": channel,
             "key": key,
           };
+          last = result.key;
           if (val.value) {
             result.data = val.value;
           }
           if (query.projection && typeof query.projection === 'object') {
             result = Projection(result, query.projection);
           }
-
           return result;
         }).filter(val=>{
           if (query.values && val.data && query.filter && typeof query.filter === 'object') {
@@ -346,8 +341,32 @@ function Channels(db) {
             return true;
           }
         });
+        let cursor = null;
+        if (last) {
+          cursor = {};
+          if (query.limit) {
+            cursor.limit = parseInt(query.limit);
+          }
+          if (query.reverse) {
+            cursor.reverse = true;
+            cursor.lt = last;
+          } else {
+            cursor.reverse = false;
+            cursor.gt = last;
+          }
+          if (query.values) {
+            cursor.values = true;
+          }
+          if (query.filter) {
+            cursor.filter = query.filter;
+          }
+          if (query.projection) {
+            cursor.projection = query.projection;
+          }
+        }
         resolve({
-          "data": data
+          "data": data,
+          "cursor": cursor
         });
       });
     });
@@ -362,8 +381,6 @@ function Channels(db) {
 
 }
 
-// Support for node.js
 if (typeof module !== 'undefined' && module && module.exports) {
   module.exports = Channels;
 }
-
