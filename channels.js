@@ -14,7 +14,7 @@ function Channels(db) {
     let result = {};
     for(let k in doc) {
       if (projection[k]) {
-        if (typeof doc[k] === 'object') {
+        if (typeof projection[k] === 'object') {
           result[k] = Projection(doc[k],projection[k]);
         } else {
           result[k] = doc[k];
