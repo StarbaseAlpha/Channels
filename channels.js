@@ -28,9 +28,15 @@ function Channels(db) {
 
   let filtered = false;
 
+  const Search = (query, data) => {
+    let y = new RegExp(query.split(' ').map(val=>{return '(?=.*' + val + ')'}).join(''),'i');
+    let z = data.match(y);
+    return z;
+  };
+
   if (typeof filter === 'string' && typeof doc === 'string') {
-    let regex = new RegExp(filter,'ig');
-    if (doc && doc.match(regex)) {
+    let found = Search(filter, doc);
+    if (doc && found) {
       return false;
     } else {
       return true;
@@ -376,6 +382,8 @@ function Channels(db) {
   channel.onEvent = (cb) => {
     onEvent = cb;
   };
+
+  channel.datastore = db;
 
   return channel;
 
