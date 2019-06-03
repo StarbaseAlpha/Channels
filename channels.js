@@ -94,11 +94,14 @@ function Channels(db) {
     }
     let path = channel + slash + key;
 
+    let dsPath = '!' + channel + '!' + key;
+
     return {
       "path": path,
       "channel": channel,
       "key": key,
-      "slash": slash
+      "slash": slash,
+      "dsPath": dsPath
     };
   };
 
