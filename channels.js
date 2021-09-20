@@ -268,7 +268,8 @@ function Channels(db) {
       db.list({
 
         "gt": "!" + channel + slash + key + "!",
-        "lt": "!" + channel + slash + key + '\uffff' + "/"
+        "lt": "!" + channel + slash + key + '\/\uffff' + "/"
+
 
       }).then(results => {
 
